@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recharge Plan Comparison</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #3f51b5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #3f51b5;
+            outline: none;
+        }
+
+        .button {
+            text-align: center;
+        }
+
+        button {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #303f9f;
+        }
+
+        .compare-section {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #3f51b5;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .best-plan {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #3f51b5;
+            border-radius: 5px;
+            background-color: #e8eaf6;
+        }
+
+        #additionalInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Recharge Plan Comparison</h1>
+
+<div class="container">
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="input-group">
+            <label for="price">Price (in ₹):</label>
+            <input type="number" id="price" placeholder="Enter price" required>
+        </div>
+
+        <div class="input-group">
+            <label for="validity">Validity (in days):</label>
+            <input type="number" id="validity" placeholder="Enter validity in days" required>
+        </div>
+
+        <div class="input-group">
+            <label for="data">Data (GB):</label>
+            <input type="number" id="data" step="0.1" placeholder="Enter data in GB" required>
+        </div>
+
+        <div class="input-group">
+            <label for="planType">Plan Type:</label>
+            <select id="planType" onchange="toggleAdditionalInput()" required>
+                <option value="">Select plan type</option>
+                <option value="gb/day">GB/Day</option>
+                <option value="total gb">Total GB</option>
+                <option value="gb/day + total gb">GB/Day + Total GB</option>
+            </select>
+        </div>
+
+        <div id="additionalInput" class="input-group">
+            <label for="additionalData">Additional Data (GB):</label>
+            <input type="number" id="additionalData" step="0.1" placeholder="Enter additional data in GB">
+        </div>
+
+        <div class="button">
+            <button onclick="calculateCost()">Add Plan</button>
+        </div>
+    </div>
+
+    <!-- Comparison Section -->
+    <div class="compare-section">
+        <button class="compare-button" onclick="showComparison()">Compare Plans</button>
+        <table id="comparisonTable">
+            <thead>
+                <tr>
+                    <th>Plan</th>
+                    <th>Price (₹)</th>
+                    <th>Cost per Day (₹)</th>
+                    <th>Daily Data (GB/day)</th>
+                    <th>Total Data (GB)</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="bestPlanSection" class="best-plan" style="display:none;">
+    <h3>Best Value for Money Plan</h3>
+    <p id="bestPlanDetails"></p>
+</div>
+
+<script>
+    let plans = [];
+
+    function toggleAdditionalInput() {
+        const planType = document.getElementById('planType').value;
+        const additionalInput = document.getElementById('additionalInput');
+        if (planType === 'gb/day + total gb') {
+            additionalInput.style.display = 'block';
+        } else {
+            additionalInput.style.display = 'none';
+            document.getElementById('additionalData').value = ''; // Clear additional data field
+        }
+    }
+
+    function calculateCost() {
+        const price = parseFloat(document.getElementById('price').value);
+        const validity = parseInt(document.getElementById('validity').value);
+        const data = parseFloat(document.getElementById('data').value);
+        const planType = document.getElementById('planType').value.toLowerCase();
+        const additionalData = parseFloat(document.getElementById('additionalData').value) || 0;
+
+        let costPerDay = (price / validity).toFixed(2);
+        let dailyData = 'N/A';
+        let totalData = 'N/A';
+
+        if (planType === 'gb/day') {
+            dailyData = data.toFixed(2);
+            totalData = (data * validity).toFixed(2);
+        } else if (planType === 'total gb') {
+            totalData = data.toFixed(2);
+            dailyData = (data / validity).toFixed(2); // Assuming equal distribution
+        } else if (planType === 'gb/day + total gb') {
+            dailyData = data.toFixed(2);
+            totalData = (data * validity + additionalData).toFixed(2);
+        } else {
+            alert('Please select a valid plan type.');
+            return;
+        }
+
+        const plan = {
+            price,
+            costPerDay,
+            dailyData,
+            totalData
+        };
+
+        plans.push(plan);
+        updateTable();
+        findBestPlan();
+    }
+
+    function updateTable() {
+        const tableBody = document.getElementById('comparisonTable').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+
+        plans.forEach((plan, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>Plan ${index + 1}</td>
+                <td>₹${plan.price}</td>
+                <td>₹${plan.costPerDay}</td>
+                <td>${plan.dailyData} GB/day</td>
+                <td>${plan.totalData} GB</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function showComparison() {
+        const table = document.getElementById('comparisonTable');
+        table.style.display = 'table';
+    }
+
+    function findBestPlan() {
+        let bestPlan = null;
+
+        plans.forEach(plan => {
+            if (!bestPlan || plan.costPerDay < bestPlan.costPerDay) {
+                bestPlan = plan;
+            }
+        });
+
+        if (bestPlan) {
+            const bestPlanSection = document.getElementById('bestPlanSection');
+            const bestPlanDetails = document.getElementById('bestPlanDetails');
+            bestPlanDetails.innerHTML = `Plan Price: ₹${bestPlan.price}, Cost per Day: ₹${bestPlan.costPerDay}, Daily Data: ${bestPlan.dailyData} GB, Total Data: ${bestPlan.totalData} GB`;
+            bestPlanSection.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
